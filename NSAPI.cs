@@ -79,12 +79,6 @@ namespace NSDotnet
         }
 
         /// <summary>
-        /// Makes a request to the NationStates URI as outlined by the request builder provided
-        /// </summary>
-        public async Task<HttpResponseMessage?> MakeRequest<T>(RequestBuilder<T> requestBuilder) where T : Shards
-            => await MakeRequest(requestBuilder.BuildRequest());
-
-        /// <summary>
         /// Sends a telegram using the NationStates API
         /// IMPORTANT: IF YOU ARE SENDING A RECRUITMENT TELEGRAM, ENSURE `bool Recruitment` IS SET TO TRUE
         /// NSDotNet cannot know activity that has taken place BEFORE it's runtime, and assumes a recruitment TG was sent
@@ -105,7 +99,7 @@ namespace NSDotnet
         /// <param name="Address" type="URI">The URI to request from</param>
         /// <returns>The HttpResponseMessage from the host</returns>
         /// </summary>
-        private async Task<HttpResponseMessage?> MakeRequest(string Address)
+        public async Task<HttpResponseMessage?> MakeRequest(string Address)
         {
             if(_userAgent == null || _userAgent.Trim() == string.Empty)
                 throw new InvalidOperationException("No User-Agent set.");
@@ -134,7 +128,7 @@ namespace NSDotnet
         /// <param name="Cancellation" type="CancellationToken">A cancellation token for prematurely cancelling the task</param>
         /// <returns>The HttpResponseMessage from the host</returns>
         /// </summary>
-        private async Task<HttpResponseMessage?> MakeRequest(string Address, CancellationToken Cancellation)
+        public async Task<HttpResponseMessage?> MakeRequest(string Address, CancellationToken Cancellation)
         {
             if(_userAgent == null || _userAgent.Trim() == string.Empty)
                 throw new InvalidOperationException("No User-Agent set.");
