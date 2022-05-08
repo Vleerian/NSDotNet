@@ -60,6 +60,9 @@ namespace NSDotnet
         const int Recruitment_Span = 180;
         const int Non_RecruitNormal_Span = 30;
 
+        public int Count => stampLog.Count;
+        public bool CanRequest => stampLog.CanRequest;
+
         private DateTime NextTG = DateTime.Now + new TimeSpan(0,0,Recruitment_Span);
 
         private readonly HttpClient client = new();
@@ -116,7 +119,7 @@ namespace NSDotnet
             
             // If the site has seen more rate-limited requests than the application, equalize it
             int RateLimitSeen = Helpers.CheckRatelimit(Req);
-            while(RateLimitSeen < stampLog.Count) stampLog.Enqueue();
+            while(RateLimitSeen > stampLog.Count) stampLog.Enqueue();
 
             return Req;
         }
@@ -149,7 +152,7 @@ namespace NSDotnet
             
             // If the site has seen more rate-limited requests than the application, equalize it
             int RateLimitSeen = Helpers.CheckRatelimit(Req);
-            while(RateLimitSeen < stampLog.Count) stampLog.Enqueue();
+            while(RateLimitSeen > stampLog.Count) stampLog.Enqueue();
 
             return Req;
         }
