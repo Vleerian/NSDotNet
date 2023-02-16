@@ -53,22 +53,19 @@ namespace NSDotnet
         const int Max_Requests = 50;
         // NSDotnet undershoots the max API speed
         const int NSDotnet_Max_Requests = 45;
-        // The "seconds" component in "Requests per second"
-        const int Time_Span = 30;
+
+        // The last-seen result of X-RateLimit-Requests-Seen
+        public int Requests_Seen = 0;
+        private DateTimeOffset Ratelimit_Reference_Date;
+        private DateTime Last_Request = DateTime.Now;
+        private int Next_Delay = 0;
 
         // The amount of time between recruitment and non-recruitment TGs respectively
         const int Recruitment_Span = 180;
         const int Non_RecruitNormal_Span = 30;
-
-        public int Count => stampLog.Count;
-        public bool CanRequest => stampLog.CanRequest;
-
         private DateTime NextTG = DateTime.Now + new TimeSpan(0,0,Recruitment_Span);
 
         private readonly HttpClient client = new();
-
-        private readonly LeakyBucket stampLog = new(NSDotnet_Max_Requests, Time_Span);
-
         private string? _userAgent;
         public string UserAgent
         {
@@ -79,6 +76,26 @@ namespace NSDotnet
                 client.DefaultRequestHeaders.Add("User-Agent", value);
                 _userAgent = value;
             }
+        }
+
+        /// <summary>
+        /// This method checks the X-ratelimit-requests-seen header and returns how long the application should wait for it's next request
+        /// </summary>
+        void Get_Rate_Limit_Delay(HttpResponseMessage r)
+        {
+            int RatelimitSeen = Int32.Parse(r.Headers.GetValues("X-ratelimit-requests-seen").First());
+            DateTimeOffset Request_Date = (DateTimeOffset)r.Headers.Date!;
+            if(RatelimitSeen == 1)
+                Ratelimit_Reference_Date = Request_Date;
+            else if(RatelimitSeen > 45)
+            {
+                TimeSpan Reference_Delta = Request_Date - Ratelimit_Reference_Date;
+                int Time_to_Wait = 31 - ((int)Reference_Delta.TotalSeconds);
+                if(Time_to_Wait < 0 || Time_to_Wait > 31)
+                    Time_to_Wait = 31;
+                this.Next_Delay = Time_to_Wait;
+            }
+            this.Requests_Seen = RatelimitSeen;
         }
 
         /// <summary>
@@ -107,20 +124,20 @@ namespace NSDotnet
             if(_userAgent == null || _userAgent.Trim() == string.Empty)
                 throw new InvalidOperationException("No User-Agent set.");
 
-            // If the request cannot be safely made, wait
-            while(!stampLog.CanRequest )
-                await Task.Delay(600);
-
-            // Add the current time to the request history
-            stampLog.Enqueue();
+            // If you've waited a minute already, don't wait another minute for no reason
+            TimeSpan Delta = DateTime.Now - Last_Request;
+            if(Delta.TotalSeconds < Next_Delay)
+            {
+                await Task.Delay(Next_Delay * 1000);
+                Next_Delay = 0;
+            }
 
             // Make the request
             var Req = await client.GetAsync(Address);
             
-            // If the site has seen more rate-limited requests than the application, equalize it
-            int RateLimitSeen = Helpers.CheckRatelimit(Req);
-            while(RateLimitSeen > stampLog.Count) stampLog.Enqueue();
-
+            // Do rate limit calculations
+            Get_Rate_Limit_Delay(Req);
+            Last_Request = DateTime.Now;
             return Req;
         }
 
@@ -136,24 +153,18 @@ namespace NSDotnet
             if(_userAgent == null || _userAgent.Trim() == string.Empty)
                 throw new InvalidOperationException("No User-Agent set.");
 
-            // If the request cannot be safely made, wait
-            while(!stampLog.CanRequest && !Cancellation.IsCancellationRequested)
-                await Task.Delay(600);
-            // If cancellation was request, exit
-            if(Cancellation.IsCancellationRequested)
-                return null;
+            TimeSpan Delta = DateTime.Now - Last_Request;
+            if(Delta.TotalSeconds < Next_Delay)
+            {
+                await Task.Delay(Next_Delay * 1000);
+                Next_Delay = 0;
+            }
 
-            // Add the current time to the request history
-            stampLog.Enqueue();
-
-            Console.WriteLine("Requset made.");
             // Make the request
             var Req = await client.GetAsync(Address);
             
-            // If the site has seen more rate-limited requests than the application, equalize it
-            int RateLimitSeen = Helpers.CheckRatelimit(Req);
-            while(RateLimitSeen > stampLog.Count) stampLog.Enqueue();
-
+            // Do rate limit calculations
+            Get_Rate_Limit_Delay(Req);
             return Req;
         }
 
@@ -209,58 +220,5 @@ namespace NSDotnet
                 }
             }
         }
-
-        private sealed class LeakyBucket
-        {
-            // The limit to how many timestamps can be stored
-            public int Limit { get; init; }
-
-            // How long a timestamp can sit in the queue for
-            public int Fresh_Window { get; init; }
-
-            // The collection of timestamps being stored
-            private List<DateTime> RequestTimestamps= new();
-
-            public LeakyBucket(int limit, int fresh_window)
-            {
-                Limit = limit;
-                Fresh_Window = fresh_window;
-            }
-
-            // How many timestamps are being stored
-            public int Count => RequestTimestamps.Count;
-
-            // If a request can be made
-            public bool CanRequest {
-                get {
-                    CleanTimestamps();
-
-                    if(RequestTimestamps.Count == Limit)
-                    {
-                        var Difference = DateTime.Now - RequestTimestamps.Last();
-                        if(Difference.TotalSeconds > Time_Span)
-                            return true;
-                        return false;
-                    }
-                    return true;
-                }
-            }
-
-            // Clears out stale timestamps
-            private void CleanTimestamps() {
-                // Clear any timestamps from more than 30s ago
-                RequestTimestamps = RequestTimestamps.Where(Stamp=>{
-                    var Difference = DateTime.Now - Stamp;
-                    if(Difference.TotalSeconds < Fresh_Window)
-                        return true;
-                    return false;
-                }).ToList();
-            }
-
-            public void Enqueue(){
-                RequestTimestamps.Add(DateTime.Now);
-            }
-        }
-
     }
 }

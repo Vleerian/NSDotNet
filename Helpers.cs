@@ -25,15 +25,6 @@ namespace NSDotnet
     public static class Helpers
     {
         /// <summary>
-        /// This method checks the X-ratelimit-requests-seen header and returns the value
-        /// </summary>
-        public static int CheckRatelimit(HttpResponseMessage r)
-        {
-            string strRatelimitSeen = r.Headers.GetValues("X-ratelimit-requests-seen").First();
-            return Int32.Parse(strRatelimitSeen);
-        }
-
-        /// <summary>
         /// Sanitizes region and nation names
         /// </summary>
         /// <param name="name">The nation/region name to sanitize</param>
