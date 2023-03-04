@@ -87,7 +87,7 @@ namespace NSDotnet
             DateTimeOffset Request_Date = (DateTimeOffset)r.Headers.Date!;
             if(RatelimitSeen == 1)
                 Ratelimit_Reference_Date = Request_Date;
-            else if(RatelimitSeen > 45)
+            else if(RatelimitSeen > NSDotnet_Max_Requests)
             {
                 TimeSpan Reference_Delta = Request_Date - Ratelimit_Reference_Date;
                 int Time_to_Wait = 31 - ((int)Reference_Delta.TotalSeconds);
