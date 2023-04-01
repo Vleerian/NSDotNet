@@ -8,10 +8,10 @@ NSDotNet is a core library that provides Enums and data Models, as well as an AP
 ## Building
 
 You can build NSDotNet DLLs by running
-`dotnet build -C Release`
+`dotnet build src/NSDotNet.csproj -C Release`
 
 ## Building Docs
 NSDotNet uses [docfx](https://github.com/dotnet/docfx) to generate documentation.
 Documentation can be built with the following commands
-`docfx init --quiet`
+`docfx init -o ./ -q`
 `docfx docfx.json --serve`
