@@ -3,9 +3,15 @@ NationSates DotNet Core Library
 
 ## About
 
-NSDotNet is a core library that provides Enums and data Models, as well as an API Interface utilizing Leaky-Bucket rate limiting.
+NSDotNet is a core library that provides Enums and data Models, as well as an API Interface utilizing Flush-Bucket rate limiting.
 
 ## Building
 
 You can build NSDotNet DLLs by running
 `dotnet build -C Release`
+
+## Building Docs
+NSDotNet uses [docfx](https://github.com/dotnet/docfx) to generate documentation.
+Documentation can be built with the following commands
+`docfx init --quiet`
+`docfx docfx.json --serve`

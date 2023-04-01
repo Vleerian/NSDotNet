@@ -1,3 +1,4 @@
+# Various package folders and files
 *.swp
 *.*~
 project.lock.json
@@ -5,17 +6,17 @@ project.lock.json
 *.pyc
 nupkg/
 
-# Visual Studio Code
-.vscode
-
-# Rider
-.idea
-
-# User-specific files
+# Workspace folders and files
+*.vs
+*.vscode
+*.idea
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+*.sublime-workspace
+*.nuget.targets
+*.code-workspace
 
 # Build results
 [Dd]ebug/
@@ -30,3 +31,8 @@ bld/
 [Oo]bj/
 [Oo]ut/
 [Bb]uilds/
+
+# Generated Documentation
+_site
+_site_pdf
+docs/api
