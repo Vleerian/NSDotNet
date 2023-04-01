@@ -35,4 +35,9 @@ bld/
 # Generated Documentation
 _site
 _site_pdf
-docs/api
+api
+apidoc
+articles
+images
+index.md
+toc.yml
