@@ -171,7 +171,7 @@ namespace NSDotnet
         /// <summary>
         /// Donwloads the latest data dump and returns the filename
         /// </summary>
-        /// <param name="datadumptype">The type of data dump to download</typeparam>
+        /// <param name="datadumptype">The type of data dump to download</param>
         /// <returns>Filename of the downloaded dump</returns>
         public async Task<string> DownloadDataDump(DataDumpType datadumptype)
         {

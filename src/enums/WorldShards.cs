@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace NSDotnet.Enums
 {
+    /// <summary>
+    /// WorldShards provides all the available world shards on the NationStates API
+    /// </summary>
     public class WorldShards : Shards
     {
         private WorldShards(string Shard) : base(Shard, "?q=") {}

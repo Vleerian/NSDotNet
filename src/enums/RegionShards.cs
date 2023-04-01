@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace NSDotnet.Enums
 {
+    /// <summary>
+    /// RegionShards provides all the available region shards on the NationStates API
+    /// </summary>
     public class RegionShards : Shards
     {
         private RegionShards(string Shard) : base(Shard, "?region=") {}

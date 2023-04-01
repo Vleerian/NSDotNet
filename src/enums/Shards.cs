@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace NSDotnet.Enums
 {
+    /// <summary>
+    /// Shards is the base class for API sharding, and can be used as a function to build requests
+    /// </summary>
     public class Shards
     {
         public string Shard { get; init; }

@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace NSDotnet.Enums
 {
+    /// <summary>
+    /// An enum that provides ease-of-use when handling census scores
+    /// </summary>
     public enum CensusScore
     {
         CivilRights = 0,
