@@ -56,7 +56,7 @@ namespace NSDotnet
         }
 
         /// <summary>The current API status, as reported by the most recent request</summary>
-        public APIStatus Status { get => status!; }
+        public APIStatus? Status { get => status; }
 
         /// <summary>The current API status, kept private as NSAPI should be the only thing assigning to it</summary>
         private APIStatus? status;
