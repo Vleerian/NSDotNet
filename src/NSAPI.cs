@@ -27,10 +27,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 namespace NSDotnet
 {
+    /// <summary>
+    /// NSAPI is the primary API-Facing class of NSDotNet, and contains
+    /// a rate-limiting mechanism based on the NSAPI's headers. It implments
+    /// the singleton design pattern to avoid multiple instances of it being
+    /// created in a program.
+    /// </summary>
     public class NSAPI
     {
-        // Singleton stuff.
-        private NSAPI() {}
+        private NSAPI()
+        {}
 
         private static NSAPI? instance;
 
@@ -49,21 +55,77 @@ namespace NSDotnet
             }
         }
 
-        // The absolute number of requests the API will allow
-        const int Max_Requests = 50;
-        // NSDotnet undershoots the max API speed
-        const int NSDotnet_Max_Requests = 45;
+        /// <summary>The current API status, as reported by the most recent request</summary>
+        public APIStatus Status { get => status!; }
 
-        // The last-seen result of X-RateLimit-Requests-Seen
-        public int Requests_Seen = 0;
-        private DateTimeOffset Ratelimit_Reference_Date;
-        private DateTime Last_Request = DateTime.Now;
-        private int Next_Delay = 0;
+        /// <summary>The current API status, kept private as NSAPI should be the only thing assigning to it</summary>
+        private APIStatus? status;
 
-        private DateTime NextTG = DateTime.Now + new TimeSpan(0,0,Recruitment_Span);
+        /// <summary>The timestamp for the last request made</summary>
+        private DateTime LastRequest = DateTime.Now;
+
+        /// <summary>The max number of requests as reported by the NS API</summary>
+        /// <seealso cref="status">status</seealso>
+        public int limit {
+            get => status!.Limit;
+        }
+
+        /// <summary>The max number of requests NSDotNet will allow - this is 90% of the maximum the API itself allows</summary>
+        public int Limit {
+            get => (int)Math.Floor(Status.Limit * 0.9);
+        }
+
+        /// <summary>The number of remaining requests as reported by the NS API</summary>
+        /// <seealso cref="NSAPI.status">status</seealso>
+        private int remaining {
+            get => status!.Remaining;
+        }
+        
+        /// <summary>The max number of remaining requests NSDotNet will allow</summary>
+        public int Remaining {
+            get {
+                int limit_difference = limit - Limit;
+                int adjusted_remaining = remaining - limit_difference;
+                return adjusted_remaining > 0 ? adjusted_remaining : 0;
+            }
+        }
+
+        /// <summary>A boolean that determines if NSDotNet can make a request, and is used internally by Make_Request</summary>
+        /// <remarks>
+        /// By default, NSDotNet will allow a single request to be made if status has not been set, as there
+        /// is no way to get the status of the client's NSAPI window status otherwise.
+        /// </remarks>
+        /// <seealso cref="status"/>
+        public bool Can_Request {
+            get {
+                if(status == null)
+                    return true;
+
+                int Time_Between = (int)(DateTime.Now - LastRequest).TotalSeconds;
+                if(Time_Between > status!.Window)
+                    return true;
+
+                return Remaining > 0;
+            }
+        }
+
+        /// <summary>This method waits until the current window (as defined by the http headers) has reset</summary>
+        /// <seealso cref="NSAPI.status"/>
+        public async Task Wait_For_Reset() =>
+            await Task.Delay(status!.Reset * 1000);
+
+        /// <summary>This method waits until API access has been unlocked</summary>
+        /// <seealso cref="NSAPI.status"/>
+        public async Task Wait_For_Unlock() =>
+            await Task.Delay(status!.RetryAfter * 1000);
 
         private readonly HttpClient client = new();
         private string? _userAgent;
+
+        /// <summary>
+        /// The UserAgent NSDotNet uses to make requests. The UserAgent <b>MUST</b> be set
+        /// prior <b>ANY</b> requests being made to adhere the the NationStates API rules.
+        /// </summary>
         public string UserAgent
         {
             get => _userAgent ?? string.Empty;
@@ -76,52 +138,13 @@ namespace NSDotnet
         }
 
         /// <summary>
-        /// This method checks the X-ratelimit-requests-seen header and returns how long the application should wait for it's next request
-        /// </summary>
-        void Get_Rate_Limit_Delay(HttpResponseMessage r)
-        {
-            int RatelimitSeen = Int32.Parse(r.Headers.GetValues("X-ratelimit-requests-seen").First());
-            DateTimeOffset Request_Date = (DateTimeOffset)r.Headers.Date!;
-            if(RatelimitSeen == 1)
-                Ratelimit_Reference_Date = Request_Date;
-            else if(RatelimitSeen > NSDotnet_Max_Requests)
-            {
-                TimeSpan Reference_Delta = Request_Date - Ratelimit_Reference_Date;
-                int Time_to_Wait = 31 - ((int)Reference_Delta.TotalSeconds);
-                if(Time_to_Wait < 0 || Time_to_Wait > 31)
-                    Time_to_Wait = 31;
-                this.Next_Delay = Time_to_Wait;
-            }
-            this.Requests_Seen = RatelimitSeen;
-        }
-
-        /// <summary>
         /// Makes a request to the speicifed URI - note that requests may be delayed by
         /// up to 30 seconds depending on if the rate-limit ceiling has been hit
         /// <param name="Address" type="URI">The URI to request from</param>
         /// <returns>The HttpResponseMessage from the host</returns>
         /// </summary>
-        public async Task<HttpResponseMessage?> MakeRequest(string Address)
-        {
-            if(_userAgent == null || _userAgent.Trim() == string.Empty)
-                throw new InvalidOperationException("No User-Agent set.");
-
-            // If you've waited a minute already, don't wait another minute for no reason
-            TimeSpan Delta = DateTime.Now - Last_Request;
-            if(Delta.TotalSeconds < Next_Delay)
-            {
-                await Task.Delay(Next_Delay * 1000);
-                Next_Delay = 0;
-            }
-
-            // Make the request
-            var Req = await client.GetAsync(Address);
-            
-            // Do rate limit calculations
-            Get_Rate_Limit_Delay(Req);
-            Last_Request = DateTime.Now;
-            return Req;
-        }
+        public async Task<HttpResponseMessage?> MakeRequest(string Address) =>
+            await MakeRequest(Address, CancellationToken.None);
 
         /// <summary>
         /// Makes a request to the speicifed URI - note that requests may be delayed by
@@ -135,18 +158,16 @@ namespace NSDotnet
             if(_userAgent == null || _userAgent.Trim() == string.Empty)
                 throw new InvalidOperationException("No User-Agent set.");
 
-            TimeSpan Delta = DateTime.Now - Last_Request;
-            if(Delta.TotalSeconds < Next_Delay)
-            {
-                await Task.Delay(Next_Delay * 1000);
-                Next_Delay = 0;
-            }
+            if(!Can_Request)
+                await Wait_For_Reset();
+            // Make the request, and update the status variable
+            LastRequest = DateTime.Now;
+            var Req = await client.GetAsync(Address, Cancellation);
+            status = new APIStatus(Req);
 
-            // Make the request
-            var Req = await client.GetAsync(Address);
+            // If for whatever reason the request was subject to an API lockout, wait for that to go away
+            await Wait_For_Unlock();
             
-            // Do rate limit calculations
-            Get_Rate_Limit_Delay(Req);
             return Req;
         }
 
