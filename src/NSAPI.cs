@@ -60,9 +60,6 @@ namespace NSDotnet
         private DateTime Last_Request = DateTime.Now;
         private int Next_Delay = 0;
 
-        // The amount of time between recruitment and non-recruitment TGs respectively
-        const int Recruitment_Span = 180;
-        const int Non_RecruitNormal_Span = 30;
         private DateTime NextTG = DateTime.Now + new TimeSpan(0,0,Recruitment_Span);
 
         private readonly HttpClient client = new();
@@ -96,21 +93,6 @@ namespace NSDotnet
                 this.Next_Delay = Time_to_Wait;
             }
             this.Requests_Seen = RatelimitSeen;
-        }
-
-        /// <summary>
-        /// Sends a telegram using the NationStates API
-        /// IMPORTANT: IF YOU ARE SENDING A RECRUITMENT TELEGRAM, ENSURE `bool Recruitment` IS SET TO TRUE
-        /// NSDotNet cannot know activity that has taken place BEFORE it's runtime, and assumes a recruitment TG was sent
-        /// prior to it's startup.
-        /// <param name="Recruitment" type="bool">Whether or not this is a recruitment telegram</param>
-        /// <returns>The HttpResponseMessage from the host</returns>
-        /// </summary>
-        public async Task<HttpResponseMessage?> SendTelegram(bool Recruitment, string ClientKey, string SecretKey,string TGID, string Recipient)
-        {
-            while(DateTime.Now < NextTG) await Task.Delay(500);
-            NextTG = DateTime.Now + new TimeSpan(0,0,(Recruitment?Recruitment_Span:Non_RecruitNormal_Span));
-            return await MakeRequest($"https://www.nationstates.net/cgi-bin/api.cgi?a=sendTG&client={ClientKey}&key={SecretKey}&tgid={TGID}&to={Recipient}");
         }
 
         /// <summary>
