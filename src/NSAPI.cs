@@ -134,6 +134,22 @@ namespace NSDotnet
             }
         }
 
+        private NSAuth? _auth;
+        /// <summary>
+        /// The Auth parameters that NSDotNet will use when making requests. This <b>MUST</b>
+        /// be set for private shards to function correctly.
+        /// </summary>
+        public NSAuth? Auth
+        {
+            get => _auth ?? null;
+            set {
+                if(_auth != null)
+                    client.DefaultRequestHeaders.Remove(_auth.HeaderKey);
+                _auth = value;
+                client.DefaultRequestHeaders.Add(_auth!.HeaderKey, _auth.Value);
+            }
+        }
+
         /// <summary>
         /// Makes a request to the speicifed URI - note that requests may be delayed by
         /// up to 30 seconds depending on if the rate-limit ceiling has been hit
