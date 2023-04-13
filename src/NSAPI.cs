@@ -56,10 +56,7 @@ namespace NSDotnet
         }
 
         /// <summary>The current API status, as reported by the most recent request</summary>
-        public APIStatus? Status { get => status; }
-
-        /// <summary>The current API status, kept private as NSAPI should be the only thing assigning to it</summary>
-        private APIStatus? status;
+        public APIStatus? Status { get; private set; }
 
         /// <summary>The timestamp for the last request made</summary>
         private DateTime LastRequest = DateTime.Now;
@@ -67,18 +64,18 @@ namespace NSDotnet
         /// <summary>The max number of requests as reported by the NS API</summary>
         /// <seealso cref="status">status</seealso>
         public int limit {
-            get => status!.Limit;
+            get => Status!.Limit;
         }
 
         /// <summary>The max number of requests NSDotNet will allow - this is 90% of the maximum the API itself allows</summary>
         public int Limit {
-            get => (int)Math.Floor(Status.Limit * 0.9);
+            get => (int)Math.Floor(Status!.Limit * 0.9);
         }
 
         /// <summary>The number of remaining requests as reported by the NS API</summary>
         /// <seealso cref="NSAPI.status">status</seealso>
         private int remaining {
-            get => status!.Remaining;
+            get => Status!.Remaining;
         }
         
         /// <summary>The max number of remaining requests NSDotNet will allow</summary>
@@ -98,11 +95,11 @@ namespace NSDotnet
         /// <seealso cref="status"/>
         public bool Can_Request {
             get {
-                if(status == null)
+                if(Status == null)
                     return true;
 
                 int Time_Between = (int)(DateTime.Now - LastRequest).TotalSeconds;
-                if(Time_Between > status!.Window)
+                if(Time_Between > Status!.Window)
                     return true;
 
                 return Remaining > 0;
@@ -112,16 +109,16 @@ namespace NSDotnet
         /// <summary>This method waits until the current window (as defined by the http headers) has reset</summary>
         /// <seealso cref="NSAPI.status"/>
         public async Task Wait_For_Reset() =>
-            await Task.Delay(status!.Reset * 1000);
+            await Task.Delay(Status!.Reset * 1000);
 
         /// <summary>This method waits until API access has been unlocked</summary>
         /// <seealso cref="NSAPI.status"/>
         public async Task Wait_For_Unlock() =>
-            await Task.Delay(status!.RetryAfter * 1000);
+            await Task.Delay(Status!.RetryAfter * 1000);
 
         private readonly HttpClient client = new();
-        private string? _userAgent;
 
+        private string? _userAgent;
         /// <summary>
         /// The UserAgent NSDotNet uses to make requests. The UserAgent <b>MUST</b> be set
         /// prior <b>ANY</b> requests being made to adhere the the NationStates API rules.
@@ -163,7 +160,7 @@ namespace NSDotnet
             // Make the request, and update the status variable
             LastRequest = DateTime.Now;
             var Req = await client.GetAsync(Address, Cancellation);
-            status = new APIStatus(Req);
+            Status = new APIStatus(Req);
 
             // If for whatever reason the request was subject to an API lockout, wait for that to go away
             await Wait_For_Unlock();
