@@ -55,6 +55,12 @@ namespace NSDotnet
             }
         }
 
+        /// <summary>A semaphore lock to prevent simultaneous requsts.</summary>
+        /// <remarks>Technically speaking, simultaneous requests aren't a problem with
+        /// the API, however being too cautious is the name of the game. While an API
+        /// overrun isn't the end of the world, it's still an unfavorable outcome.</remarks>
+        private readonly SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
+
         /// <summary>The current API status, as reported by the most recent request</summary>
         public APIStatus? Status { get; private set; }
 
@@ -182,12 +188,24 @@ namespace NSDotnet
         {
             if(_userAgent == null || _userAgent.Trim() == string.Empty)
                 throw new InvalidOperationException("No User-Agent set.");
-
+            
             if(!Can_Request)
                 await Wait_For_Reset();
             // Make the request, and update the status variable
             LastRequest = DateTime.Now;
-            var Req = await client.GetAsync(Address, Cancellation);
+            
+            await Lock.WaitAsync();
+            HttpResponseMessage Req;
+            try{
+                Req = await client.GetAsync(Address, Cancellation);
+            }
+            catch(Exception e)
+            {
+                Lock.Release();
+                throw e;
+            }
+            Lock.Release();
+
             Status = new APIStatus(Req);
 
             // If for whatever reason the request was subject to an API lockout, wait for that to go away
