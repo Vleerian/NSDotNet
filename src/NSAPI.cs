@@ -156,7 +156,7 @@ namespace NSDotnet
         /// <returns>The HttpResponseMessage from the host</returns>
         /// <seealso cref="NSAPI.MakeRequest">status</seealso>
         /// </summary>
-        public async Task<T> GetAPI(string Address) 
+        public async Task<T> GetAPI<T>(string Address) 
         {
             var Req = await MakeRequest(Address, CancellationToken.None);
             return Helpers.BetterDeserialize<T>(await Req.Content.ReadAsStringAsync());
@@ -202,7 +202,7 @@ namespace NSDotnet
         /// <param name="NationName">Which nation to fetch data for</param>
         /// <returns>The nation's data from the API</returns>
         public async Task<NationAPI> GetNation(string NationName) =>
-            GetAPI<NationAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?nation={NationName}");
+            await GetAPI<NationAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?nation={NationName}");
 
         /// <summary>
         /// Fetches region data from the API
@@ -210,7 +210,7 @@ namespace NSDotnet
         /// <param name="RegionName">Which region to fetch data for</param>
         /// <returns>The region's data from the API</returns>
         public async Task<RegionAPI> GetRegion(string RegionName) =>
-            GetAPI<RegionAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?region={NationName}");
+            await GetAPI<RegionAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?region={RegionName}");
 
         /// <summary>
         /// Donwloads the latest data dump and returns the filename
