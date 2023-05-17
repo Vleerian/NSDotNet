@@ -158,7 +158,7 @@ namespace NSDotnet
         /// </summary>
         public async Task<T> GetAPI(string Address) 
         {
-            var Req = await MakeRequest(Address, CancellationToken.None)
+            var Req = await MakeRequest(Address, CancellationToken.None);
             return Helpers.BetterDeserialize<T>(await Req.Content.ReadAsStringAsync());
         }
 
