@@ -151,6 +151,18 @@ namespace NSDotnet
         }
 
         /// <summary>
+        /// This methods wraps MakeRequest and will attempt to deserialize the return to the specified type
+        /// <param name="Address" type="URI">The URI to request from</param>
+        /// <returns>The HttpResponseMessage from the host</returns>
+        /// <seealso cref="NSAPI.MakeRequest">status</seealso>
+        /// </summary>
+        public async Task<T> GetAPI(string Address) 
+        {
+            var Req = await MakeRequest(Address, CancellationToken.None)
+            return Helpers.BetterDeserialize<T>(await Req.Content.ReadAsStringAsync());
+        }
+
+        /// <summary>
         /// Makes a request to the speicifed URI - note that requests may be delayed by
         /// up to 30 seconds depending on if the rate-limit ceiling has been hit
         /// <param name="Address" type="URI">The URI to request from</param>
@@ -183,6 +195,22 @@ namespace NSDotnet
             
             return Req;
         }
+
+        /// <summary>
+        /// Fetches nation data from the API
+        /// </summary>
+        /// <param name="NationName">Which nation to fetch data for</param>
+        /// <returns>The nation's data from the API</returns>
+        public async Task<NationAPI> GetNation(string NationName) =>
+            GetAPI<NationAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?nation={NationName}");
+
+        /// <summary>
+        /// Fetches region data from the API
+        /// </summary>
+        /// <param name="RegionName">Which region to fetch data for</param>
+        /// <returns>The region's data from the API</returns>
+        public async Task<RegionAPI> GetRegion(string RegionName) =>
+            GetAPI<RegionAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?region={NationName}");
 
         /// <summary>
         /// Donwloads the latest data dump and returns the filename
