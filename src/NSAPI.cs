@@ -62,7 +62,7 @@ namespace NSDotnet
         private DateTime LastRequest = DateTime.Now;
 
         /// <summary>The max number of requests as reported by the NS API</summary>
-        /// <seealso cref="status">status</seealso>
+        /// <seealso cref="NSAPI.status">status</seealso>
         public int limit {
             get => Status!.Limit;
         }
