@@ -158,14 +158,16 @@ namespace NSDotnet
 
         /// <summary>
         /// This methods wraps MakeRequest and will attempt to deserialize the return to the specified type
-        /// <param name="Address" type="URI">The URI to request from</param>
+        /// <param name="Address" type="string">The URI to request from</param>
+        /// <param name="Data" type="T">The data to be returned from the API</param>
         /// <returns>The HttpResponseMessage from the host</returns>
         /// <seealso cref="NSAPI.MakeRequest">status</seealso>
         /// </summary>
-        public async Task<T> GetAPI<T>(string Address) 
+        public async Task<(HttpResponseMessage Response, T Data)> GetAPI<T>(string Address) 
         {
             var Req = await MakeRequest(Address, CancellationToken.None);
-            return Helpers.BetterDeserialize<T>(await Req.Content.ReadAsStringAsync());
+            T Data = Helpers.BetterDeserialize<T>(await Req!.Content.ReadAsStringAsync());
+            return (Req, Data);
         }
 
         /// <summary>
@@ -217,18 +219,28 @@ namespace NSDotnet
         /// <summary>
         /// Fetches nation data from the API
         /// </summary>
+        /// <remarks>
+        /// This method deos not return the HttpResponseMessage from the request to the API
+        /// For this reason, it's recommended that some level of validation is done to ensure
+        /// that the nation being request axtually exists.
+        /// </remarks>
         /// <param name="NationName">Which nation to fetch data for</param>
         /// <returns>The nation's data from the API</returns>
         public async Task<NationAPI> GetNation(string NationName) =>
-            await GetAPI<NationAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?nation={NationName}");
+            (await GetAPI<NationAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?nation={NationName}")).Data;
 
         /// <summary>
         /// Fetches region data from the API
         /// </summary>
+        /// <remarks>
+        /// This method deos not return the HttpResponseMessage from the request to the API
+        /// For this reason, it's recommended that some level of validation is done to ensure
+        /// that the region being request axtually exists.
+        /// </remarks>
         /// <param name="RegionName">Which region to fetch data for</param>
         /// <returns>The region's data from the API</returns>
         public async Task<RegionAPI> GetRegion(string RegionName) =>
-            await GetAPI<RegionAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?region={RegionName}");
+            (await GetAPI<RegionAPI>($"https://www.nationstates.net/cgi-bin/api.cgi?region={RegionName}")).Data;
 
         /// <summary>
         /// Donwloads the latest data dump and returns the filename
