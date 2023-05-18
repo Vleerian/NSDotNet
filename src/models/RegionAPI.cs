@@ -52,7 +52,7 @@ namespace NSDotnet.Models
         [XmlArray("EMBASSIES"), XmlArrayItem("EMBASSY", typeof(string))]
         public string[] Embassies { get; init; }
         [XmlElement("LASTUPDATE")]
-        public double LastUpdate { get; init; }
+        public double? LastUpdate { get; init; }
 
         //These are values added after the fact by ARCore
         public string[] Nations
