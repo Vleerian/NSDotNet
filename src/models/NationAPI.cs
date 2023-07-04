@@ -34,6 +34,8 @@ namespace NSDotnet.Models
 
         [XmlElement("NAME")]
         public string? name { get; init; }
+        [XmlElement("REGION")]
+        public string? region { get; init; }
 
         [XmlElement("ENDORSEMENTS")]
         public string? endorsements { get; init; }
@@ -49,6 +51,10 @@ namespace NSDotnet.Models
 
         [XmlElement("INFLUENCE")]
         public string InfluenceLevel { get; init; }
+        [XmlElement("TGCANRECRUIT")]
+        public int TGCanRecruit { get; init; }
+        [XmlElement("TGCANCAMPAIGN")]
+        public int TGCanCampaign { get; init; }
 
         [XmlIgnore]
         public int SPDR => (int)CensusData[CensusScore.Influence].CensusScore;

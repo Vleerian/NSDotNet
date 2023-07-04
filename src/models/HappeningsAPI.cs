@@ -25,6 +25,8 @@ namespace NSDotnet.Models
     [Serializable()]
     public struct HappeningsAPI
     {
+        [XmlAttribute("id")]
+        public int EventID { get; init; }
         [XmlElement("TIMESTAMP")]
         public long Timestamp { get; init; }
         [XmlElement("TEXT")]
