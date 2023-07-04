@@ -82,6 +82,12 @@ namespace NSDotnet.Models
         [XmlArray("CENSUS"), XmlArrayItem("SCALE", typeof(CensusAPI))]
         public List<CensusAPI> CensusScores { get; init; }
 
+        [XmlElement("GAVOTE")]
+        public string GAVote { get; init; }
+
+        [XmlElement("SCVOTE")]
+        public string SCVote { get; init; }
+
         [XmlIgnore]
         public Dictionary<CensusScore, CensusAPI> CensusData =>
             CensusScores.ToDictionary(C => C.Census);
