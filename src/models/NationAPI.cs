@@ -34,6 +34,15 @@ namespace NSDotnet.Models
 
         [XmlElement("NAME")]
         public string? name { get; init; }
+        [XmlElement("TYPE")]
+        public string type { get; init; }
+
+        [XmlElement("FULLNAME")]
+        public string fullname { get; init; }
+        [XmlElement("CATEGORY")]
+        public string? category { get; init; }
+        [XmlElement("POPULATION")]
+        public int? population;
         [XmlElement("REGION")]
         public string? region { get; init; }
 
@@ -69,12 +78,6 @@ namespace NSDotnet.Models
         public bool EndorsingDel;
         [XmlIgnore]
         public bool EndorsingRO;
-
-        [XmlElement("TYPE")]
-        public string type { get; init; }
-
-        [XmlElement("FULLNAME")]
-        public string fullname { get; init; }
 
         [XmlElement("FLAG")]
         public string flag { get; init; }

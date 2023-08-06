@@ -39,8 +39,22 @@ namespace NSDotnet.Models
         public string Region { get; init; }
         [XmlElement("FLAG")]
         public string Flag { get; init; }
+
+        /// <remarks>
+        /// It should be noted that when parsing the cards data dump, CATEGORY is the nation's Category, not it's rarity
+        /// When requested from the API, Category will be the card's rarity.
+        /// </remarks>
+        [XmlElement("CATEGORY")]
+        public string Category { get; init; }
+
+        /// <remarks>
+        /// It should be noted that when parsing the cards data dump, CATEGORY is the nation's Category, not it's rarity
+        /// When requested from the API, Category will be the card's rarity.
+        /// </remarks>
         [XmlElement("CARDCATEGORY")]
         public string Rarity { get; init; }
+        [XmlElement("MARKET_VALUE")]
+        public float MarketValue { get; init; }
         [XmlElement("DESCRIPTION")]
         public string Description { get; init; }
         [XmlArray("BADGE")]
@@ -49,7 +63,15 @@ namespace NSDotnet.Models
 
         [XmlArray("TROPHIES")]
         [XmlArrayItem("TROPHY", typeof(Trophy))]
-        public List<Trophy> Trophies { get; init; }
+        public Trophy[] Trophies { get; init; }
+
+        [XmlArray("OWNERS")]
+        [XmlArrayItem("OWNER", typeof(string))]
+        public string[] Owners { get; init; }
+
+        [XmlArray("MARKETS")]
+        [XmlArrayItem("MARKET", typeof(CardListing))]
+        public CardListing[] Markets { get; init; }
     }
 
     [Serializable()]
@@ -60,5 +82,18 @@ namespace NSDotnet.Models
 
         [XmlText]
         public string Score { get; init; }
+    }
+
+    [Serializable()]
+    public class CardListing
+    {
+        [XmlElement("NATION")]
+        public string nation { get; init; }
+        [XmlElement("PRICE")]
+        public float price { get; init; }
+        [XmlElement("TIMESTAMP")]
+        public long timestamp { get; init; }
+        [XmlElement("TYPE")]
+        public string type { get; init; }
     }
 }
