@@ -28,7 +28,7 @@ namespace NSDotnet.Models
     {
         [XmlArray("DECK")]
         [XmlArrayItem("CARD", typeof(DeckItem))]
-        public DeckItem[] Deck { get; init; }
+        public DeckItem[]? Deck { get; init; }
         [XmlElement("INFO")]
         public DeckInfo Deck_Info { get; init; }
     }
@@ -56,16 +56,16 @@ namespace NSDotnet.Models
         [XmlElement("ID")]
         public int ID { get; init; }
         [XmlElement("LAST_PACK_OPENED")]
-        public int Last_Pack_Opened { get; init; }
+        public string? Last_Pack_Opened { get; init; }
         [XmlElement("LAST_VALUED")]
-        public int Last_Valued { get; init; }
+        public string? Last_Valued { get; init; }
         [XmlElement("NAME")]
         public string Name { get; init; }
         [XmlElement("NUM_CARDS")]
         public int Num_Cards { get; init; }
         [XmlElement("RANK")]
-        public int Rank { get; init; }
+        public string? Rank { get; init; }
         [XmlElement("REGION_RANK")]
-        public int Region_Rank { get; init; }
+        public string? Region_Rank { get; init; }
     }
 }

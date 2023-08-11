@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using System.Xml.Serialization;
 
 #region License
@@ -37,14 +38,19 @@ namespace NSDotnet
         /// <returns>The parsed return from the request.</returns>
         /// </summary>
         public static async Task<T> BetterDeserialize<T>(HttpResponseMessage response) =>
-            (T)new XmlSerializer(typeof(T))!.Deserialize(new StringReader(await response.Content.ReadAsStringAsync()))!;
+            BetterDeserialize<T>(await response.Content.ReadAsStringAsync());
 
         /// <summary>
         /// This method makes deserializing XML less painful
         /// <param name="url">The URL to request from</param>
         /// <returns>The parsed return from the request.</returns>
         /// </summary>
-        public static T BetterDeserialize<T>(string XML) =>
-            (T)new XmlSerializer(typeof(T))!.Deserialize(new StringReader(XML))!;
+        public static T BetterDeserialize<T>(string XML)
+        {
+            string cleanXml = Regex.Replace(XML, @"<[a-zA-Z].[^(><.)]+/>",
+                new MatchEvaluator(RemoveText));
+            return (T)new XmlSerializer(typeof(T))!.Deserialize(new StringReader(cleanXml))!;
+        }
+        static string RemoveText(Match m) { return "";}
     }
 }
