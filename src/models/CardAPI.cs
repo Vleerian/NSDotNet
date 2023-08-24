@@ -54,7 +54,7 @@ namespace NSDotnet.Models
         [XmlElement("CARDCATEGORY")]
         public string Rarity { get; init; }
         [XmlElement("MARKET_VALUE")]
-        public float MarketValue { get; init; }
+        public float? MarketValue { get; init; }
         [XmlElement("DESCRIPTION")]
         public string Description { get; init; }
         [XmlArray("BADGE")]

@@ -91,8 +91,42 @@ namespace NSDotnet.Models
         [XmlElement("SCVOTE")]
         public string SCVote { get; init; }
 
+        [XmlElement("PACKS")]
+        public int Packs { get; init; }
+
         [XmlIgnore]
         public Dictionary<CensusScore, CensusAPI> CensusData =>
             CensusScores.ToDictionary(C => C.Census);
+
+        [XmlArray("ISSUES")]
+        [XmlArrayItem("ISSUE")]
+        public Issue[] Issues { get; init; }
+    }
+
+    public struct Issue
+    {
+        [XmlAttribute("id")]
+        public int IssueID { get; init; }
+        [XmlElement("TITLE")]
+        public string Title { get; init; }
+        [XmlElement("TEXT")]
+        public string Text { get; init; }
+        [XmlElement("AUTHOR")]
+        public string Author { get; init; }
+        [XmlElement("PIC1")]
+        public string Pic1 { get; init; }
+        [XmlElement("PIC2")]
+        public string Pic2 { get; init; }
+
+        [XmlElement("OPTION")]
+        public IssueOption[] Options { get; init; }
+    }
+
+    public struct IssueOption
+    {
+        [XmlText]
+        public string OptionText { get; init; }
+        [XmlAttribute("id")]
+        public int OptionID { get; init; }
     }
 }
