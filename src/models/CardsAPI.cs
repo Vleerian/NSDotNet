@@ -1,3 +1,4 @@
+using System.Collections.ObjectModel;
 using System.Xml.Serialization;
 
 #region License
@@ -31,6 +32,23 @@ namespace NSDotnet.Models
         public DeckItem[]? Deck { get; init; }
         [XmlElement("INFO")]
         public DeckInfo Deck_Info { get; init; }
+        [XmlElement("COLLECTION")]
+        public Collection Collection { get; init; }
+
+    }
+
+    [Serializable()]
+    public class Collection
+    {
+        [XmlElement("NAME")]
+        public string Name { get; init; }
+        [XmlElement("NATION")]
+        public string Nation { get; init; }
+        [XmlElement("UPDATED")]
+        public string Updated { get; init; }
+        [XmlArray("DECK")]
+        [XmlArrayItem("CARD", typeof(DeckItem))]
+        public DeckItem[]? Deck { get; init; }
     }
 
     [Serializable()]
