@@ -41,5 +41,17 @@ namespace NSDotnet.Models
 
         [XmlElement("RRANK")]
         public float RegionRank { get; init; }
+
+        [XmlElement("POINT")]
+        public CensusPoint[] DataPoints { get; init; }
+    }
+
+    [Serializable]
+    public class CensusPoint
+    {
+        [XmlElement("SCORE")]
+        public float CensusScore { get; init; }
+        [XmlElement("TIMESTAMP")]
+        public long Timestamp { get; init; }
     }
 }

@@ -60,13 +60,12 @@ namespace NSDotnet.Models
 
         [XmlElement("INFLUENCE")]
         public string InfluenceLevel { get; init; }
+        [XmlElement("INFLUENCENUM")]
+        public string Influence { get; init; }
         [XmlElement("TGCANRECRUIT")]
         public int TGCanRecruit { get; init; }
         [XmlElement("TGCANCAMPAIGN")]
         public int TGCanCampaign { get; init; }
-
-        [XmlIgnore]
-        public int SPDR => (int)CensusData[CensusScore.Influence].CensusScore;
 
         [XmlIgnore]
         public int Residency => (int)CensusData[CensusScore.Residency].CensusScore;
