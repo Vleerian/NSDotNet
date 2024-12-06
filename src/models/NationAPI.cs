@@ -27,7 +27,7 @@ namespace NSDotnet.Models
     [Serializable, XmlRoot("NATION")]
     public struct NationAPI
     {
-        public string GetCSV() => $"{name},{Endos},{IsWA},{InfluenceLevel},{SPDR},{Residency}";
+        public string GetCSV() => $"{name},{Endos},{IsWA},{InfluenceLevel},{Influence},{Residency}";
 
         [XmlAttribute("id")]
         public string id { get; init; }
@@ -59,9 +59,9 @@ namespace NSDotnet.Models
         public string unstatus { get; init; }
 
         [XmlElement("INFLUENCE")]
-        public string InfluenceLevel { get; init; }
+        public int InfluenceLevel { get; init; }
         [XmlElement("INFLUENCENUM")]
-        public string Influence { get; init; }
+        public int Influence { get; init; }
         [XmlElement("TGCANRECRUIT")]
         public int TGCanRecruit { get; init; }
         [XmlElement("TGCANCAMPAIGN")]
