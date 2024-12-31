@@ -58,6 +58,8 @@ namespace NSDotnet.Models
         public int ID { get; init; }
         [XmlElement("CATEGORY")]
         public string Rarity { get; init; }
+        [XmlElement("MARKET_VALUE")]
+        public float Market_Value { get; init; }
         [XmlElement("SEASON")]
         public int Season { get; init; }
     }
